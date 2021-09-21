@@ -49,20 +49,18 @@ class App {
             }
         }
         const id_transaction = Math.random();
-        setTimeout(() =>
-            {request.post(options.hostname+options.path, {json:body},(error, response, body) => {
-                if(error){
-                    console.log(id_transaction, path);
-                    console.log(id_transaction, body);
-                    reject(error);
-                    return;
-                }
-                // console.log(id_transaction, `statusCode: ${response.statusCode}`)
-                // console.log(id_transaction, path);
-                // console.log(id_transaction, body);
-                resolve(body.uuid);
-            })
-        }, 1000)
+        request.post(options.hostname+options.path, {json:body},(error, response, body) => {
+            if(error){
+                console.log(id_transaction, path);
+                console.log(id_transaction, body);
+                reject(error);
+                return;
+            }
+            // console.log(id_transaction, `statusCode: ${response.statusCode}`)
+            // console.log(id_transaction, path);
+            // console.log(id_transaction, body);
+            resolve(body.uuid);
+        })
 
        /* const req = https.request(options, res => {
         res.on('data', d => {
@@ -86,62 +84,59 @@ class App {
     }
 
     public async import_script(){
-        fs.readFile(path.join(__dirname, 'naf.json'), 'utf8', (err, data) =>{
-            if (err) {
-                console.log(err);
-                return;
+        const data =fs.readFileSync(path.join(__dirname, 'naf.json'), 'utf8');
+
+        let jsonContent = JSON.parse(data);
+        console.log(jsonContent[0]);
+
+        for (const nafArray of jsonContent) {
+
+            let naf: ICreateNaf = {
+                code: nafArray.NAF,
+                description: null,
+                label: nafArray.LABEL_NAF
             }
 
-            let jsonContent = JSON.parse(data);
-            console.log(jsonContent[0]);
+            //INSERT NAF
+            let naf_id = await this.post_content(naf, '/v1/naf');
 
-            jsonContent.forEach(async nafArray => {
-                let naf: ICreateNaf = {
-                    code: nafArray.NAF,
+            if(typeof naf_id !== 'string'){
+                continue;
+            }
+
+            for (const romeArray of nafArray.ROMES) {
+
+                let rome: ICreateRome = {
+                    code: romeArray.CODE_ROME,
                     description: null,
-                    label: nafArray.LABEL_NAF
+                    label: romeArray.LABEL_ROME
                 }
 
-                //INSERT NAF
-                let naf_id = await this.post_content(naf, '/v1/naf');
+                let rome_id = await this.post_content(rome, '/v1/rome');
 
-                if(typeof naf_id !== 'string'){
-                    return;
+                let rome_naf: ICreateRomeNaf = {
+                    nafId: naf_id,
+                    romeId: rome_id
                 }
-                nafArray.ROMES.forEach(async romeArray => {
 
-                    let rome: ICreateRome = {
-                        code: romeArray.CODE_ROME,
-                        description: null,
-                        label: romeArray.LABEL_ROME
-                    }
+                await this.post_content(rome_naf, '/v1/rome_nafs');
+            };
 
-                    let rome_id = await this.post_content(rome, '/v1/rome');
+            for (const keywordItem of nafArray.KEYWORD) {
+                let keyword: ICreatekeyword = {
+                    label: keywordItem
+                }
 
-                    let rome_naf: ICreateRomeNaf = {
-                        nafId: naf_id,
-                        romeId: rome_id
-                    }
+                let keyword_id = await this.post_content(keyword, '/v1/keyword');
 
-                    await this.post_content(rome_naf, '/v1/rome_nafs');
-                });
+                let keyword_naf: ICreateKeywordNaf = {
+                    keywordId: keyword_id,
+                    nafId: naf_id
+                }
 
-                nafArray.KEYWORD.forEach(async keywordItem => {
-                    let keyword: ICreatekeyword = {
-                        label: keywordItem
-                    }
-
-                    let keyword_id = await this.post_content(keyword, '/v1/keyword');
-
-                    let keyword_naf: ICreateKeywordNaf = {
-                        keywordId: keyword_id,
-                        nafId: naf_id
-                    }
-
-                    await this.post_content(keyword_naf, '/v1/keyword_nafs');
-                });
-            });
-        });
+                await this.post_content(keyword_naf, '/v1/keyword_nafs');
+            };
+        };
     }
 
 }
