@@ -53,6 +53,7 @@ class App {
             if(error){
                 console.log(id_transaction, path);
                 console.log(id_transaction, body);
+                console.log(error);
                 reject(error);
                 return;
             }
