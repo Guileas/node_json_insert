@@ -147,6 +147,7 @@ const app = new App();
         await app.import_script();
     } catch (e) {
         // Deal with the fact the chain failed
+        console.error(e);
         console.error("I failed miserably");
     }
 })();
