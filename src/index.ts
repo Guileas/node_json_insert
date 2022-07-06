@@ -35,7 +35,6 @@ interface ICreateKeywordNaf {
 }
 
 class App {
-
     public async post_content(body: ICreateNaf|ICreateRome|ICreatekeyword|ICreateRomeNaf|ICreateKeywordNaf, path: string): Promise<String> {
         return new Promise((resolve: (uuid: string) => void, reject: (err: Error) => void) => {
         const data = JSON.stringify(body);
@@ -100,7 +99,7 @@ class App {
             }
 
             //INSERT NAF
-            let naf_id = await this.post_content(naf, '/v1/naf');
+            let naf_id = await this.post_content(naf, '/naf');
 
             if(typeof naf_id !== 'string'){
                 continue;
@@ -114,14 +113,14 @@ class App {
                     label: romeArray.LABEL_ROME
                 }
 
-                let rome_id = await this.post_content(rome, '/v1/rome');
+                let rome_id = await this.post_content(rome, '/rome');
 
                 let rome_naf: ICreateRomeNaf = {
                     nafId: naf_id,
                     romeId: rome_id
                 }
 
-                await this.post_content(rome_naf, '/v1/rome_nafs');
+                await this.post_content(rome_naf, '/rome_nafs');
             };
 
             for (const keywordItem of nafArray.KEYWORD) {
@@ -129,14 +128,14 @@ class App {
                     label: keywordItem
                 }
 
-                let keyword_id = await this.post_content(keyword, '/v1/keyword');
+                let keyword_id = await this.post_content(keyword, '/keyword');
 
                 let keyword_naf: ICreateKeywordNaf = {
                     keywordId: keyword_id,
                     nafId: naf_id
                 }
 
-                await this.post_content(keyword_naf, '/v1/keyword_nafs');
+                await this.post_content(keyword_naf, '/keyword_nafs');
             };
         };
     }
