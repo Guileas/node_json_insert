@@ -1,12 +1,13 @@
 'use strict';
 
-// Set default node environment to development
-process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-
 import * as fs from "fs";
 import * as path from 'path';
 import * as request from 'request';
+import * as dotenv from "dotenv"
+dotenv.config();
 
+// Set default node environment to development
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 interface ICreateNaf {
     code: String;
     description: String | null;
@@ -39,7 +40,7 @@ class App {
         return new Promise((resolve: (uuid: string) => void, reject: (err: Error) => void) => {
         const data = JSON.stringify(body);
         const options = {
-            hostname: 'http://[2a10:4646:14::affa:c01]',
+            hostname: process.env.API_URL,
             port: 443,
             path: path,
             method: 'POST',
